@@ -9,7 +9,7 @@
 This simulator is based on the Anke (TRPG-style story) work "[安科/安价] [同人] [MYGO] [HBR/炽焰天穹]丰川祥子、为了人类的未来而战……真的能战吗？" by NGA user "多多良柴犬".
 [Link to original story (in Chinese)](https://nga.178.com/read.php?tid=41989465)
 
-![Screenshot](assets/screenshot_20250606.png)
+![Screenshot](assets/screenshot_2025060622.png)
 
 ## Installation
 
