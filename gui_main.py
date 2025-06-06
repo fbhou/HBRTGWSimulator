@@ -83,7 +83,7 @@ def main():
     sg.theme('SystemDefault')
 
     # --- GUI Layout Definition ---
-    character_frame = sg.Frame('选择队员 (至少1名)', [
+    character_frame = sg.Frame('选择队员（至少1名）', [
         [sg.Checkbox(name, key=f'char_{name}')] for name in available_characters.keys()
     ], font='Any 12')
 
