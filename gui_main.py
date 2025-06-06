@@ -1,6 +1,9 @@
 # gui_main.py
 import FreeSimpleGUI as sg
+from prettytable import PrettyTable
+import pyglet
 import sys
+import os
 import importlib
 import inspect
 from pathlib import Path
@@ -9,6 +12,13 @@ from pathlib import Path
 from battle import Battle
 from character import Character
 from enemy import Enemy
+
+def resource_path(relative_path):
+    base_path = getattr(sys, '_MEIPASS', None)
+    if base_path is None:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
 
 # --- Helper class to redirect print output to the GUI ---
 class StdoutRedirector:
@@ -33,8 +43,10 @@ class StdoutRedirector:
 def get_available_characters():
     """Dynamically finds all Character subclasses from the 'characters' directory."""
     characters = {}
-    char_path = Path('characters')
+    char_path_str = resource_path('characters')
+    char_path = Path(char_path_str)
     if not char_path.is_dir():
+        sg.popup_error(f"错误：找不到资源文件夹 '{char_path_str}'！")
         return {}
         
     for py_file in char_path.glob('*.py'):
@@ -70,6 +82,8 @@ def get_available_enemies():
 # --- Main GUI Application ---
 
 def main():
+    pyglet.font.add_file(resource_path('resources/MapleMono-NF-CN-Regular.ttf'))
+
     # Discover available characters and enemies
     available_characters = get_available_characters()
     available_enemies = get_available_enemies()
@@ -84,21 +98,21 @@ def main():
 
     # --- GUI Layout Definition ---
     character_frame = sg.Frame('选择队员（至少1名）', [
-        [sg.Checkbox(name, key=f'char_{name}')] for name in available_characters.keys()
-    ], font='Any 12')
-
+        [sg.Checkbox(name, key=f'char_{name}', font=('Maple Mono NF CN', 12))] for name in available_characters.keys()
+    ], font=('Maple Mono NF CN', 12))
+    
     enemy_frame = sg.Frame('选择敌人', [
-        [sg.Radio(name, 'ENEMY_RADIO', key=f'enemy_{name}', default=(i==0))] for i, name in enumerate(available_enemies.keys())
-    ], font='Any 12')
+        [sg.Radio(name, 'ENEMY_RADIO', key=f'enemy_{name}', default=(i==0), font=('Maple Mono NF CN', 12))] for i, name in enumerate(available_enemies.keys())
+    ], font=('Maple Mono NF CN', 12))
 
     log_column = [
-        [sg.Text('战斗日志', font='Any 14')],
-        [sg.Multiline(size=(100, 30), key='-LOG-', autoscroll=True, disabled=True, font=('Courier New', 10))]
+        [sg.Text('战斗日志', font=('Maple Mono NF CN', 12))],
+        [sg.Multiline(size=(100, 30), key='-LOG-', autoscroll=True, disabled=True, font=('Maple Mono NF CN', 10))],
     ]
     
     layout = [
         [sg.Column([[character_frame], [enemy_frame]]), sg.Column(log_column)],
-        [sg.Button('开始战斗', font='Any 12'), sg.Button('清空日志', font='Any 12'), sg.Button('退出', font='Any 12')]
+        [sg.Button('开始战斗', font=('Maple Mono NF CN', 12)), sg.Button('清空日志', font=('Maple Mono NF CN', 12)), sg.Button('退出', font=('Maple Mono NF CN', 12))]
     ]
 
     window = sg.Window('红烧小祥战斗模拟器', layout)
@@ -156,11 +170,12 @@ def main():
 
                 print("\n########## 战斗结束 ##########")
                 print("########## 伤害统计 ##########")
-                print(f'{"队员":<8}{"aD":>8}{"rD":>8}')
-                print('-' * 28) # 分隔线
+
+                table = PrettyTable()
+                table.field_names = ["队员", "aD", "rD"]
                 for character in battle.character_dict.values():
-                    # .strip() 用于去除一些角色名字末尾多余的空格
-                    print(f"{character.name.strip():<8}{character.ad:>8.1f}{character.rd:>8.1f}")
+                    table.add_row([character.name, f"{character.ad:>8.1f}", f"{character.rd:>8.1f}"])
+                print(table)
 
             except Exception as e:
                 print(f"\n--- 发生错误 ---\n模拟过程中出现异常: {e}")

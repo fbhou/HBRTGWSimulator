@@ -96,12 +96,12 @@ class Battle(object):
         print()
         print("角色状态：")
         for id, character in self.character_dict.items():
-            print(f"{character.name} - DP: {dp_level_name(character.dp)}, Down Turn: {character.down_turn}")
+            print(f"{character.format_name()} - DP: {dp_level_name(character.dp)}, Down Turn: {character.down_turn}")
             self.damage_original_dict[id] = 0
             character.rediced = False
         print("敌人状态：")
         for enemy in self.enemy_dict.values():
-            print(f"{enemy.name} - DP: {enemy.dp}, HP: {enemy.hp}, Is Break: {enemy.is_break}, Down Turn: {enemy.down_turn}, Blast Count: {enemy.blast_count()}, Target Queue: {enemy.target_queue}")
+            print(f"{enemy.format_name()} - DP: {enemy.dp}, HP: {enemy.hp}, Is Break: {enemy.is_break}, Down Turn: {enemy.down_turn}, Blast Count: {enemy.blast_count()}, Target Queue: {enemy.target_queue}")
         print("")
 
         boss = list(self.enemy_dict.items())[0][1]
@@ -115,9 +115,9 @@ class Battle(object):
         print("攻击掷骰：")
         for character in self.character_dict.values():
             if character.down_turn > 0:
-                print(f"{character.name}：无法行动")
+                print(f"{character.format_name()}：无法行动")
             elif character.unable_attack_turn > 0:
-                print(f"{character.name}：无法攻击")
+                print(f"{character.format_name()}：无法攻击")
             else:
                 character.dice(self)
         

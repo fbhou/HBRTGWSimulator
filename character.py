@@ -1,6 +1,7 @@
 from __future__ import annotations
 import random
 from typing import TYPE_CHECKING
+from wcwidth import wcswidth
 
 from enemy import Enemy_Single, Enemy_Multi, Enemy_Damage
 from utils import *
@@ -10,7 +11,7 @@ if TYPE_CHECKING:
 
 class Character(object):
 
-    def __init__(self, id: str = "Default", name: str = "炽天使队员", troop: str = "", internal_id: str = "00A00"):
+    def __init__(self, id: str = "Default", name: str = "默认队员", troop: str = "", internal_id: str = "00A00"):
         self.max_dp = 4
         self.dp = self.max_dp
         self.id = id
@@ -26,8 +27,14 @@ class Character(object):
         self.rd = 0
         self.has_offensive_ultimate = False
     
+    def format_name(self) -> str:
+        if wcswidth(self.name) > 8:
+            return self.name
+        else:
+            return f"{self.name: <{8 + len(self.name) - wcswidth(self.name)}}"
+
     def dice(self, battle: Battle) -> int:
-        result = battle.d(100, f"{self.name}")
+        result = battle.d(100, f"{self.format_name()}")
         battle.dice_dict[self.id] = result
         if result <= 3:
             battle.failure_list.append(self.id)
@@ -41,7 +48,7 @@ class Character(object):
         while True:
             if level < 1:
                 break
-            result = battle.d(10, f"{self.name} 的大成功掷骰")
+            result = battle.d(10, f"{self.format_name()} 的大成功掷骰")
             if result == 10:
                 result = battle.d(2, f"")
                 if result == 1:
@@ -80,7 +87,7 @@ class Character(object):
         if not isinstance(self, Megumi):
             for character in battle.character_dict.values():
                 if isinstance(character, Megumi):
-                    print(f"{self.name} 触发大失败，{character.name} 尝试发动「极限冲击」！")
+                    print(f"{self.format_name()} 触发大失败，{character.format_name()} 尝试发动「极限冲击」！")
                     if character.cast_ultimate(battle):
                         battle.failure_list.append(character.id)
                         return
@@ -89,7 +96,7 @@ class Character(object):
         while True:
             if level < 1:
                 break
-            result = battle.d(10, f"{self.name} 的大失败掷骰")
+            result = battle.d(10, f"{self.format_name()} 的大失败掷骰")
             if result == 10:
                 result = battle.d(2, f"")
                 if result == 2:
@@ -172,26 +179,26 @@ class Character(object):
 
     def receive_single_damage(self, battle: Battle, damage: Enemy_Single):
         if not damage.is_inevitable and self.unable_dodge_turn <= 0 and self.down_turn <= 0:
-            dodge = battle.d(100, f"{self.name} 的闪避掷骰")
+            dodge = battle.d(100, f"{self.format_name()} 的闪避掷骰")
             if dodge >= damage.damage:
-                print(f"{self.name} 闪避成功！")
+                print(f"{self.format_name()} 闪避成功！")
                 return
             elif dodge >= damage.damage / 2:
-                print(f"{self.name} 闪避部分伤害！{dp_level_name(self.dp)} → {dp_level_name(self.dp - 1)}")
+                print(f"{self.format_name()} 闪避部分伤害！{dp_level_name(self.dp)} → {dp_level_name(self.dp - 1)}")
                 self.dp -= 1
                 return
-        print(f"{self.name} 未能闪避！{dp_level_name(self.dp)} → {dp_level_name(self.dp - 2)}")
+        print(f"{self.format_name()} 未能闪避！{dp_level_name(self.dp)} → {dp_level_name(self.dp - 2)}")
         self.dp -= 2
 
     def receive_multi_damage(self, battle: Battle, damage: Enemy_Multi):
         if not damage.is_inevitable and self.unable_dodge_turn <= 0 and self.down_turn <= 0:
-            dodge = battle.d(100, f"{self.name} 的闪避掷骰")
+            dodge = battle.d(100, f"{self.format_name()} 的闪避掷骰")
             if dodge >= damage.damage:
-                print(f"{self.name} 闪避成功！")
+                print(f"{self.format_name()} 闪避成功！")
                 return
             elif dodge >= damage.damage / 2:
-                print(f"{self.name} 闪避部分伤害！{dp_level_name(self.dp)} → {dp_level_name(self.dp - 1)}")
+                print(f"{self.format_name()} 闪避部分伤害！{dp_level_name(self.dp)} → {dp_level_name(self.dp - 1)}")
                 self.dp -= 1
                 return
-        print(f"{self.name} 未能闪避！{dp_level_name(self.dp)} → {dp_level_name(self.dp - 2)}")
+        print(f"{self.format_name()} 未能闪避！{dp_level_name(self.dp)} → {dp_level_name(self.dp - 2)}")
         self.dp -= 2

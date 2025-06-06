@@ -1,1 +1,3 @@
 FreeSimpleGUI
+prettytable
+pyglet

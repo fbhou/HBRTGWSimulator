@@ -1,6 +1,7 @@
 from __future__ import annotations
 import random
 from typing import TYPE_CHECKING
+from wcwidth import wcswidth
 
 if TYPE_CHECKING:
     from battle import Battle
@@ -22,7 +23,13 @@ class Enemy(object):
         self.target = ""
         self.target_queue = []
         self.is_inevitable = False  # Indicates if the enemy's attacks are inevitable
-    
+
+    def format_name(self) -> str:
+        if wcswidth(self.name) > 8:
+            return self.name
+        else:
+            return f"{self.name: <{8 + len(self.name) - wcswidth(self.name)}}"
+
     def receive_damage(self, damage: int):
         if not self.is_break:
             self.dp -= damage
@@ -37,7 +44,7 @@ class Enemy(object):
 
     def dp_break(self):
         print()
-        print(f"{self.name} BREAK！")
+        print(f"{self.format_name()} BREAK！")
         self.is_break = True
         self.down_turn = 1
     
@@ -87,21 +94,21 @@ class Rotary_Mole(Enemy):
             self.target = self.target_queue[0]
         if self.target == "":
             self.target = random.sample(list(battle.character_dict.items()), 1)[0][0]
-        print(f"{self.name} 发动单体攻击，目标：{battle.character_dict[self.target].name}！")
+        print(f"{self.format_name()} 发动单体攻击，目标：{battle.character_dict[self.target].format_name()}！")
         power = 20 + battle.d(80)
-        print(f"{self.name} 的攻击出力：{power}")
+        print(f"{self.format_name()} 的攻击出力：{power}")
         battle.enemy_single_list.append((Enemy_Single(self.target, power, is_inevitable=self.is_inevitable)))
     
     def numb_needle(self, battle: Battle):
-        print(f"{self.name} 发动群体攻击！")
+        print(f"{self.format_name()} 发动群体攻击！")
         power = battle.d(100)
-        print(f"{self.name} 的攻击出力：{power}")
+        print(f"{self.format_name()} 的攻击出力：{power}")
         battle.enemy_multi_list.append((Enemy_Multi(power, is_inevitable=False)))
 
     def demise_wave(self, battle: Battle):
-        print(f"{self.name} 发动转阶段特殊群体攻击！")
+        print(f"{self.format_name()} 发动转阶段特殊群体攻击！")
         power = battle.dd(2, 100)
-        print(f"{self.name} 的攻击出力：{power}")
+        print(f"{self.format_name()} 的攻击出力：{power}")
         battle.enemy_multi_list.append((Enemy_Multi(power, is_inevitable=False)))
 
 class Hopper(Enemy):
@@ -121,9 +128,9 @@ class Hopper(Enemy):
             self.target = self.target_queue[0]
         if self.target == "":
             self.target = random.sample(list(battle.character_dict.items()), 1)[0][0]
-        print(f"{self.name} 发动单体攻击，目标：{battle.character_dict[self.target].name}！")
+        print(f"{self.format_name()} 发动单体攻击，目标：{battle.character_dict[self.target].format_name()}！")
         power = battle.d(50)
-        print(f"{self.name} 的攻击出力：{power}")
+        print(f"{self.format_name()} 的攻击出力：{power}")
         battle.enemy_single_list.append(Enemy_Single(self.target, power, is_inevitable=self.is_inevitable))
 
 class Enemy_Damage(object):

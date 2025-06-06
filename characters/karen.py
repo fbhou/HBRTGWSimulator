@@ -16,11 +16,11 @@ class Karen(Character):
         self.melee = True
     
     def dice(self, battle: Battle) -> int:
-        result = battle.d(100, f"{self.name}")
+        result = battle.d(100, f"{self.format_name()}")
         battle.dice_dict[self.id] = result
         boss = list(battle.enemy_dict.items())[0][1]
         if boss.is_break and result >= 50 and boss.blast_count() < 5:
-            print(f"{self.name} 发动技能「杀戮的美学」，叠加 1 层破坏！")
+            print(f"{self.format_name()} 发动技能「杀戮的美学」，叠加 1 层破坏！")
             boss.blast_count_dict[self.id] = boss.blast_count_dict.get(self.id, 0) + 1
         if result <= 3:
             battle.failure_list.append(self.id)
@@ -34,19 +34,19 @@ class Karen(Character):
         self.default_attack(battle)
         boss = list(battle.enemy_dict.items())[0][1]
         if self.blood_dance not in battle.skill_list and self.pp > 0 and battle.round >= 3 and boss.is_break and battle.dice_dict[self.id] >= 65:
-            print(f"{self.name} 尝试发动必杀技「血腥之舞」！")
+            print(f"{self.format_name()} 尝试发动必杀技「血腥之舞」！")
             self.cast_ultimate(battle)
     
     def cast_ultimate(self, battle):
         if self.pp <= 0:
-            print(f"{self.name} 的剩余技能次数不足，无法发动「血腥之舞」！")
+            print(f"{self.format_name()} 的剩余技能次数不足，无法发动「血腥之舞」！")
             return False
         battle.skill_list.append(self.blood_dance)
         self.pp -= 1
         return True
     
     def blood_dance(self, battle: Battle):
-        print(f"{self.name} 发动必杀技「血腥之舞」！")
+        print(f"{self.format_name()} 发动必杀技「血腥之舞」！")
         boss = list(battle.enemy_dict.items())[0][1]
         power = 0
         blast_sum = 0
@@ -59,11 +59,11 @@ class Karen(Character):
             if damage < 50:
                 full_success = False
             power += damage
-        print(f"{self.name} 的「血腥之舞」造成了 {power} 点伤害，叠加 {blast_sum} 层破坏，当前 {boss.blast_count()} 层破坏！")
+        print(f"{self.format_name()} 的「血腥之舞」造成了 {power} 点伤害，叠加 {blast_sum} 层破坏，当前 {boss.blast_count()} 层破坏！")
         battle.damage_original_dict[self.id] += power
         if full_success:
-            print(f"{self.name} 的必杀技「血腥之舞」全程成功，追加 100 点固定伤害！")
+            print(f"{self.format_name()} 的必杀技「血腥之舞」全程成功，追加 100 点固定伤害！")
             battle.damage_original_dict[self.id] += 100
         else:
-            print(f"{self.name} 因为反作用力无法行动！")
+            print(f"{self.format_name()} 因为反作用力无法行动！")
             self.down_turn = 2
