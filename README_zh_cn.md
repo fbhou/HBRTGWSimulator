@@ -1,6 +1,6 @@
 # 红烧小祥战斗模拟器
 
-[简体中文](./README.md) | [English](./README_en.md) | [日本語](./README_ja.md)
+[简体中文](./README_zh_cn.md) | [English](./README_en.md) | [日本語](./README_ja.md)
 
 ---
 
