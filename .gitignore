@@ -1,0 +1,73 @@
+# ============== #
+# Python Files #
+# ============== #
+
+# Python bytecode and compiled files
+# These are generated automatically by the Python interpreter
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+
+# Virtual Environments
+# Never commit your virtual environment folder (e.g., venv, .venv, env)
+venv/
+.venv/
+env/
+*_env/
+
+
+# ================== #
+# Project Artifacts #
+# ================== #
+
+# Distribution / Packaging artifacts from PyInstaller or other tools
+dist/
+build/
+*.spec
+
+
+# Egg and wheel-related files
+*.egg-info/
+*.egg
+wheels/
+pip-wheel-metadata/
+
+
+# ================================= #
+# IDE / Editor Configuration Files #
+# ================================= #
+
+# Visual Studio Code
+.vscode/
+
+# PyCharm
+.idea/
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+
+# ==================================== #
+# Logs and Local Configuration Files #
+# ==================================== #
+
+# Log files
+*.log
+*.log.*
+
+# Local environment variables file (never commit secrets)
+.env
+
+
+# ========================= #
+# Operating System Files #
+# ========================= #
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
