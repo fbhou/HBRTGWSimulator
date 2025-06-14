@@ -114,7 +114,7 @@ class Rotary_Mole(Enemy):
 class Hopper(Enemy):
 
     def __init__(self):
-        super().__init__("Hopper", "跳虫    ", 800, 800)
+        super().__init__("Hopper", "跳虫    ", 300, 300)
 
     def move(self, battle: Battle):
         if self.is_break:

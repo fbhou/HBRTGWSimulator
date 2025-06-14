@@ -5,6 +5,10 @@ from typing import TYPE_CHECKING
 from field import Field
 from utils import dp_level_name
 
+if TYPE_CHECKING:
+    from character import Character
+    from enemy import Enemy_Single, Enemy_Multi
+
 class Battle(object):
     def __init__(self):
         self.log = []
@@ -46,6 +50,8 @@ class Battle(object):
         self.enemy_single_list = []
         self.enemy_multi_list = []
 
+        sorted_character_ids = sorted(self.character_dict, key=lambda x: self.character_dict[x].priority, reverse=True)
+
         self.ally_round()
         if self.lost or self.winned:
             return
@@ -81,7 +87,8 @@ class Battle(object):
                 character.unable_dodge_turn -= 1
             if character.is_dead:
                 self.lost = True
-        for enemy_id, enemy in self.enemy_dict.items():
+        temp_enemy_dict = self.enemy_dict.copy()
+        for enemy_id, enemy in temp_enemy_dict.items():
             if enemy.is_dead:
                 self.enemy_dict.pop(enemy_id)
         if not self.enemy_dict:
@@ -105,6 +112,8 @@ class Battle(object):
         print("")
 
         boss = list(self.enemy_dict.items())[0][1]
+
+        self.on_ally_round()
 
         # Recovery check
         for character in self.character_dict.values():
@@ -135,7 +144,11 @@ class Battle(object):
                     character.enhancement(self)
 
         # Main moves
-        for character in self.character_dict.values():
+        # for character in self.character_dict.values():
+        #     character.move(self)
+        sorted_character_ids = sorted(self.character_dict, key=lambda x: self.character_dict[x].priority, reverse=True)
+        for id in sorted_character_ids:
+            character = self.character_dict[id]
             character.move(self)
         
         # Process skills
@@ -190,6 +203,8 @@ class Battle(object):
             self.winned = True
 
     def enemy_round(self):
+        self.on_enemy_round()
+
         # Enemy move
         for enemy_id, enemy in self.enemy_dict.items():
             enemy.move(self)
@@ -200,13 +215,13 @@ class Battle(object):
                 self.character_dict[enemy_single.target].receive_damage(self, enemy_single)
         
         for enemy_multi in self.enemy_multi_list:
-            for character_id, character in self.character_dict.items():
-                character.receive_damage(self, enemy_multi)
+            self.on_enemy_multi(enemy_multi)
+            if enemy_multi.damage > 0:
+                for character_id, character in self.character_dict.items():
+                    character.receive_damage(self, enemy_multi)
         
         # Update enemy states
         for enemy_id, enemy in self.enemy_dict.items():
-            if enemy.is_dead:
-                self.enemy_dict.pop(enemy_id)
             if enemy.down_turn > 0:
                 enemy.down_turn -= 1
             if enemy.target_queue:
@@ -214,6 +229,27 @@ class Battle(object):
                     enemy.target_queue = []
                 else:
                     enemy.target_queue = enemy.target_queue[1:]
+    
+    def on_ally_round(self):
+        from characters.anon import Anon
+        for character_id, character in self.character_dict.items():
+            if isinstance(character, Anon):
+                if character.i_will_protect_everyone(self):
+                    return
+
+    def on_enemy_round(self):
+        pass
+
+    def on_enemy_single(self, enemy_single: Enemy_Single):
+        pass
+
+    def on_enemy_multi(self, enemy_multi: Enemy_Multi):
+        from characters.anon import Anon
+        for character_id, character in self.character_dict.items():
+            if isinstance(character, Anon):
+                if character.i_will_reflect_enemy_skill(self, enemy_multi):
+                    enemy_multi.damage = 0
+                    return
 
     def d(self, bound: int, message: str = "") -> int:
         result = random.randint(1, bound)

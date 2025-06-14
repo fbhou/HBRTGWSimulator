@@ -26,6 +26,8 @@ class Character(object):
         self.ad = 0
         self.rd = 0
         self.has_offensive_ultimate = False
+        self.melee = True
+        self.priority = 0
     
     def format_name(self) -> str:
         if wcswidth(self.name) > 8:

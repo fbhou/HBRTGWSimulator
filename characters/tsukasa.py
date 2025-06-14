@@ -43,7 +43,7 @@ class Tsukasa(Character):
             return
         if self.select_enhancement_target(battle, 1):
             character_id = self.select_enhancement_target(battle, 1)[0]
-            print(f"{self.format_name()} 的发动技能「强化」，将 {battle.character_dict[character_id].format_name()} 的攻击出力修正为 50！")
+            print(f"{self.format_name()} 发动技能「强化」，将 {battle.character_dict[character_id].format_name()} 的攻击出力修正为 50！")
             self.rd += 50 - battle.dice_dict[character_id]
             battle.character_dict[character_id].rd -= 50 - battle.dice_dict[character_id]
             battle.dice_dict[character_id] = 50
