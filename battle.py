@@ -50,8 +50,6 @@ class Battle(object):
         self.enemy_single_list = []
         self.enemy_multi_list = []
 
-        sorted_character_ids = sorted(self.character_dict, key=lambda x: self.character_dict[x].priority, reverse=True)
-
         self.ally_round()
         if self.lost or self.winned:
             return
@@ -95,8 +93,6 @@ class Battle(object):
             self.winned = True
         
     def ally_round(self):
-        from characters.tsukasa import Tsukasa
-        from characters.tama import Tama
         # Print round information
         print()
         print(f"--- Round {self.round} ---")
@@ -108,17 +104,13 @@ class Battle(object):
             character.rediced = False
         print("敌人状态：")
         for enemy in self.enemy_dict.values():
-            print(f"{enemy.format_name()} - DP: {enemy.dp}, HP: {enemy.hp}, Is Break: {enemy.is_break}, Down Turn: {enemy.down_turn}, Blast Count: {enemy.blast_count()}, Target Queue: {enemy.target_queue}")
+            print(f"{enemy.format_name()} - DP: {enemy.dp}, HP: {enemy.hp}, Is Break: {enemy.is_break}, Down Turn: {enemy.down_turn}, Blast Count: {enemy.blast_count()}, Target Queue: {enemy.target_queue}, Break Turn: {enemy.break_turn}")
         print("")
 
         boss = list(self.enemy_dict.items())[0][1]
 
-        self.on_ally_round()
-
-        # Recovery check
         for character in self.character_dict.values():
-            if isinstance(character, Tama):
-                character.resupply(self)
+            character.on_ally_round_start(self)
 
         # Attack dice rolls
         print("攻击掷骰：")
@@ -130,27 +122,20 @@ class Battle(object):
             else:
                 character.dice(self)
         
+        # Process dice results
+        for character in self.character_dict.values():
+            character.on_dice_finish(self)
+
         # Process successes and failures
         for id in self.success_list:
             self.character_dict[id].success(self)
         for id in self.failure_list:
             self.character_dict[id].failure(self)
 
-        # Process dice results
-        for character in self.character_dict.values():
-            if isinstance(character, Tsukasa):
-                if character.down_turn <= 0 and character.unable_attack_turn <= 0:
-                    character.memento_mori(self)
-                    character.enhancement(self)
-
         # Main moves
-        # for character in self.character_dict.values():
-        #     character.move(self)
-        sorted_character_ids = sorted(self.character_dict, key=lambda x: self.character_dict[x].priority, reverse=True)
-        for id in sorted_character_ids:
-            character = self.character_dict[id]
+        for character in self.character_dict.values():
             character.move(self)
-        
+
         # Process skills
         for skill in self.skill_list:
             skill(self)
@@ -203,25 +188,29 @@ class Battle(object):
             self.winned = True
 
     def enemy_round(self):
-        self.on_enemy_round()
+        for character in self.character_dict.values():
+            character.on_enemy_round_start(self)
 
         # Enemy move
-        for enemy_id, enemy in self.enemy_dict.items():
+        for enemy in self.enemy_dict.values():
             enemy.move(self)
         
         # Process enemy attacks
         for enemy_single in self.enemy_single_list:
+            for character in self.character_dict.values():
+                character.on_enemy_single_damage(self, enemy_single)
             if enemy_single.target in self.character_dict:
                 self.character_dict[enemy_single.target].receive_damage(self, enemy_single)
         
         for enemy_multi in self.enemy_multi_list:
-            self.on_enemy_multi(enemy_multi)
+            for character in self.character_dict.values():
+                character.on_enemy_multi_damage(self, enemy_multi)
             if enemy_multi.damage > 0:
-                for character_id, character in self.character_dict.items():
+                for character in self.character_dict.values():
                     character.receive_damage(self, enemy_multi)
         
         # Update enemy states
-        for enemy_id, enemy in self.enemy_dict.items():
+        for enemy in self.enemy_dict.values():
             if enemy.down_turn > 0:
                 enemy.down_turn -= 1
             if enemy.target_queue:
@@ -229,32 +218,11 @@ class Battle(object):
                     enemy.target_queue = []
                 else:
                     enemy.target_queue = enemy.target_queue[1:]
-    
-    def on_ally_round(self):
-        from characters.anon import Anon
-        for character_id, character in self.character_dict.items():
-            if isinstance(character, Anon):
-                if character.i_will_protect_everyone(self):
-                    return
-
-    def on_enemy_round(self):
-        pass
-
-    def on_enemy_single(self, enemy_single: Enemy_Single):
-        pass
-
-    def on_enemy_multi(self, enemy_multi: Enemy_Multi):
-        from characters.anon import Anon
-        for character_id, character in self.character_dict.items():
-            if isinstance(character, Anon):
-                if character.i_will_reflect_enemy_skill(self, enemy_multi):
-                    enemy_multi.damage = 0
-                    return
 
     def d(self, bound: int, message: str = "") -> int:
         result = random.randint(1, bound)
-        if "Sakiko_magicsword" in self.character_dict:
-            self.character_dict["Sakiko_magicsword"].sword_heart += str(result).count('7')
+        for character in self.character_dict.values():
+            character.on_dice_result(self, result)
         if message == "":
             print(f"1d{bound} = {result}")
         else:
@@ -265,8 +233,8 @@ class Battle(object):
         res = 0
         for i in range(num):
             result = random.randint(1, bound)
-            if "Sakiko_magicsword" in self.character_dict:
-                self.character_dict["Sakiko_magicsword"].sword_heart += str(result).count('7')
+            for character in self.character_dict.values():
+                character.on_dice_result(self, result)
             res += result
         if message == "":
             print(f"{num}d{bound} = {res}")

@@ -18,6 +18,7 @@ class Tama(Character):
         self.charge = 0
         self.has_offensive_ultimate = True
         self.melee = True
+        self.priority = 50
     
     def resupply(self, battle: Battle):
         if self.down_turn > 0:
@@ -75,3 +76,6 @@ class Tama(Character):
         battle.damage_original_dict[self.id] = battle.damage_original_dict.get(self.id, 0) + power
         self.charge += delta_charge
         print(f"{self.format_name()} 的「二律背反火花拨弦」造成 {power} 点伤害，并叠加 {delta_charge} 层充电，当前 {self.charge} 层充电！")
+
+    def on_ally_round_start(self, battle: Battle):
+        self.resupply(battle)

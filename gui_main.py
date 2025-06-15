@@ -53,6 +53,7 @@ def get_available_characters():
         if py_file.stem == '__init__':
             continue
         try:
+            print(f"正在加载角色文件: {py_file.name}")
             module_name = f'characters.{py_file.stem}'
             module = importlib.import_module(module_name)
             for name, obj in inspect.getmembers(module, inspect.isclass):
@@ -146,6 +147,10 @@ def main():
                 log_elem.update(value='--- 正在准备战斗... ---\n')
             
             battle = Battle()
+
+            # Insert characters by priority order
+            selected_char_names.sort(key=lambda name: available_characters[name]().priority, reverse=True)
+
             for char_name in selected_char_names:
                 char_class = available_characters[char_name]
                 char_instance = char_class()

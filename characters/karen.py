@@ -14,6 +14,7 @@ class Karen(Character):
         self.pp = 1
         self.has_offensive_ultimate = True
         self.melee = True
+        self.priority = 70
     
     def dice(self, battle: Battle) -> int:
         result = battle.d(100, f"{self.format_name()}")

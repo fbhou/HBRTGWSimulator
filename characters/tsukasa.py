@@ -2,11 +2,11 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 import random
 
+from battle import Battle
 from character import Character
 from field import Field_fire
 
 if TYPE_CHECKING:
-    from battle import Battle
     from field import *
 
 class Tsukasa(Character):
@@ -17,11 +17,11 @@ class Tsukasa(Character):
         self.enhancement_cd = 0
         self.has_offensive_ultimate = False
         self.melee = False
+        self.priority = 80
 
     def select_enhancement_target(self, battle: Battle, count: int) -> list:
         temp_dice_dict = battle.dice_dict.copy()
         selected_targets = []
-
         while temp_dice_dict and len(selected_targets) < count:
             if not temp_dice_dict:
                 break
@@ -33,7 +33,6 @@ class Tsukasa(Character):
                 break
             selected_targets.append(character_id)
             temp_dice_dict.pop(character_id)
-
         return selected_targets
 
     def enhancement(self, battle: Battle):
@@ -79,3 +78,7 @@ class Tsukasa(Character):
         else:
             print(f"队友呢队友呢救一下啊！")
 
+    def on_dice_finish(self, battle: Battle):
+        if self.down_turn <= 0 and self.unable_attack_turn <= 0:
+            self.memento_mori(battle)
+            self.enhancement(battle)

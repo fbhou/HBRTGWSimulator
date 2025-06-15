@@ -2,7 +2,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 import random
 
+from battle import Battle
 from character import Character
+from utils import Battle
 
 if TYPE_CHECKING:
     from battle import Battle
@@ -15,6 +17,7 @@ class Megumi(Character):
         self.stun_pp = 1
         self.has_offensive_ultimate = True
         self.melee = True
+        self.priority = 60
 
     def move(self, battle: Battle):
         if self.is_dead or self.down_turn > 0 or self.unable_attack_turn > 0:
@@ -65,3 +68,10 @@ class Megumi(Character):
         battle.damage_original_dict[self.id] += damage_sum
         boss = list(battle.enemy_dict.items())[0][1]
         boss.down_turn += 1
+
+    def on_ally_failure(self, battle: Battle, ally_id: str) -> bool:
+        print(f"{battle.character_dict[ally_id].format_name()} 触发了大失败，{self.format_name()} 尝试发动「极限冲击」！")
+        if self.cast_ultimate(battle):
+            battle.failure_list.append(self.id)
+            return True
+        return False

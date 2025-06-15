@@ -54,7 +54,7 @@ class Character(object):
             if result == 10:
                 result = battle.d(2, f"")
                 if result == 1:
-                    print(self.name + " 触发了未结算的多重大成功！")
+                    print(f"{self.format_name()} 触发了未结算的多重大成功！")
                     level += 1
                     continue
                 else:
@@ -71,28 +71,24 @@ class Character(object):
             break
     
     def success_1_3(self, battle: Battle):
-        print(self.name + " 触发了大成功，本回合普攻伤害x1.5！")
+        print(f"{self.format_name()} 触发了大成功，本回合普攻伤害x1.5！")
         battle.damage_150_list.append(self.id)
     
     def success_4_6(self, battle: Battle):
-        print(self.name + " 触发了大成功，本回合普攻伤害x2！")
+        print(f"{self.format_name()} 触发了大成功，本回合普攻伤害x2！")
         battle.damage_200_list.append(self.id)
     
     def success_7_9(self, battle: Battle):
-        print(self.name + " 触发了大成功，本回合普攻伤害x2！")
+        print(f"{self.format_name()} 触发了大成功，本回合普攻伤害x2！")
         battle.damage_200_list.append(self.id)
-        print(self.name + " 追加发动必杀技！")
+        print(f"{self.format_name()} 追加发动必杀技！")
         self.cast_ultimate(battle)
             
     def failure(self, battle: Battle):
-        from characters.megumi import Megumi
-        if not isinstance(self, Megumi):
-            for character in battle.character_dict.values():
-                if isinstance(character, Megumi):
-                    print(f"{self.format_name()} 触发大失败，{character.format_name()} 尝试发动「极限冲击」！")
-                    if character.cast_ultimate(battle):
-                        battle.failure_list.append(character.id)
-                        return
+        for character_id in battle.character_dict:
+            if character_id != self.id:
+                if battle.character_dict[character_id].on_ally_failure(battle, character_id):
+                    return
         result = 0
         level = 1
         while True:
@@ -102,7 +98,7 @@ class Character(object):
             if result == 10:
                 result = battle.d(2, f"")
                 if result == 2:
-                    print(self.name + " 触发了未结算的多重大失败！")
+                    print(f"{self.format_name()} 触发了未结算的多重大失败！")
                     level += 1
                     continue
                 else:
@@ -119,7 +115,7 @@ class Character(object):
             break
     
     def failure_1_3(self, battle: Battle):
-        print(self.name + " 触发了大失败，被锁定为敌方单体攻击目标！")
+        print(f"{self.format_name()} 触发了大失败，被锁定为敌方单体攻击目标！")
         boss = list(battle.enemy_dict.items())[0][1]
         if boss.target_queue:
             if boss.target_queue[0] == self.id:
@@ -130,7 +126,7 @@ class Character(object):
             boss.target_queue.append(self.id)
     
     def failure_4_6(self, battle: Battle):
-        print(self.name + " 触发了大失败，被锁定为敌方单体攻击目标！")
+        print(f"{self.format_name()} 触发了大失败，被锁定为敌方单体攻击目标！")
         boss = list(battle.enemy_dict.items())[0][1]
         if boss.target_queue:
             if boss.target_queue[0] == self.id:
@@ -139,11 +135,11 @@ class Character(object):
                 boss.target_queue[0] = self.id
         else:
             boss.target_queue.append(self.id)
-        print(self.name + " 本回合无法闪避！")
+        print(f"{self.format_name()} 本回合无法闪避！")
         self.unable_dodge_turn += 1
 
     def failure_7_9(self, battle: Battle):
-        print(self.name + " 触发了大失败，本回合无法行动！")
+        print(f"{self.format_name()} 触发了大失败，本回合无法行动！")
         self.down_turn += 1
 
     def move(self, battle: Battle):
@@ -204,3 +200,27 @@ class Character(object):
                 return
         print(f"{self.format_name()} 未能闪避！{dp_level_name(self.dp)} → {dp_level_name(self.dp - 2)}")
         self.dp -= 2
+
+    def on_ally_round_start(self, battle: Battle):
+        pass
+
+    def on_enemy_round_start(self, battle: Battle):
+        pass
+
+    def on_dice_result(self, battle: Battle, result: int):
+        pass
+
+    def on_dice_finish(self, battle: Battle):
+        pass
+    
+    def on_enemy_single_damage(self, battle: Battle, damage: Enemy_Single):
+        pass
+
+    def on_enemy_multi_damage(self, battle: Battle, damage: Enemy_Multi):
+        pass
+
+    def on_rotary_mole_escape(self, battle: Battle, power: int) -> bool:
+        return False
+    
+    def on_ally_failure(self, battle: Battle, ally_id: str) -> bool:
+        return False

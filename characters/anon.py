@@ -7,7 +7,7 @@ from utils import dp_level_name
 
 if TYPE_CHECKING:
     from battle import Battle
-from enemy import Enemy_Single, Enemy_Multi, Enemy_Damage
+from enemy import Enemy_Single, Enemy_Multi
 
 class Anon(Character):
     def __init__(self, id: str = "Anon", name: str = "千早爱音", troop: str = "30A", internal_id: str = "30A01"):
@@ -102,3 +102,20 @@ class Anon(Character):
             else:
                 print(f"{self.format_name()} 防御失败")
                 return False
+            
+    def on_ally_round_start(self, battle: Battle):
+        self.i_will_protect_everyone(battle)
+
+    def on_enemy_multi_damage(self, battle: Battle, damage: Enemy_Multi):
+        if self.i_will_reflect_enemy_skill(battle, damage):
+            damage.damage = 0
+
+    def on_rotary_mole_escape(self, battle: Battle, power: int) -> bool:
+        boss = list(battle.enemy_dict.values())[0]
+        result = battle.d(100, f"{self.format_name()} 的阻挡掷骰")
+        if result + 50 >= power:
+            print(f"{self.format_name()} 成功阻挡了 {boss.format_name()} 的逃跑！")
+            return True
+        else:
+            print(f"{self.format_name()} 未能阻挡 {boss.format_name()} 的逃跑！")
+            return False

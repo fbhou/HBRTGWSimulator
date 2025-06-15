@@ -11,3 +11,4 @@ class Yuki(Character):
         super().__init__(id, name, troop, internal_id)
         self.has_offensive_ultimate = False
         self.melee = False
+        self.priority = 90

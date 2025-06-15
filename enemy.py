@@ -67,7 +67,7 @@ class Rotary_Mole(Enemy):
         if max_dp < 1500:
             max_dp = 1500
         max_hp = max_dp + 1000
-        super().__init__("Rotary_Mole", "畸旋钻  ", max_dp, max_hp)
+        super().__init__("Rotary_Mole", "畸旋钻", max_dp, max_hp)
     
     def move(self, battle: Battle):
         if self.is_break:
@@ -86,8 +86,12 @@ class Rotary_Mole(Enemy):
         elif choice == 2:
             self.numb_needle(battle)
             
-    def escape(self, battle: Battle):
-        return False  # Placeholder for actual escape logic
+    def escape(self, battle: Battle) -> bool:
+        power = battle.d(100, f"{self.format_name()} 的逃跑掷骰")
+        for character in battle.character_dict.values():
+            if character.on_rotary_mole_escape(battle, power):
+                return False
+        return True
 
     def attack_single(self, battle: Battle):
         if self.target_queue:
@@ -114,7 +118,7 @@ class Rotary_Mole(Enemy):
 class Hopper(Enemy):
 
     def __init__(self):
-        super().__init__("Hopper", "跳虫    ", 300, 300)
+        super().__init__("Hopper", "跳虫", 300, 300)
 
     def move(self, battle: Battle):
         if self.is_break:

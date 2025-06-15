@@ -13,6 +13,7 @@ class Ruka(Character):
         self.has_offensive_ultimate = True
         self.melee = True
         self.rediced = False
+        self.priority = 100
 
     def dice(self, battle: Battle) -> int:
         result = battle.d(100, f"{self.format_name()}")
