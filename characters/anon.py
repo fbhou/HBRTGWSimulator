@@ -1,13 +1,12 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 
-from battle import Battle
 from character import Character
 from utils import dp_level_name
+from enemy import Enemy_Single, Enemy_Multi
 
 if TYPE_CHECKING:
     from battle import Battle
-from enemy import Enemy_Single, Enemy_Multi
 
 class Anon(Character):
     def __init__(self, id: str = "Anon", name: str = "千早爱音", troop: str = "30A", internal_id: str = "30A01"):
@@ -115,7 +114,9 @@ class Anon(Character):
         result = battle.d(100, f"{self.format_name()} 的阻挡掷骰")
         if result + 50 >= power:
             print(f"{self.format_name()} 成功阻挡了 {boss.format_name()} 的逃跑！")
+            print()
             return True
         else:
             print(f"{self.format_name()} 未能阻挡 {boss.format_name()} 的逃跑！")
+            print()
             return False

@@ -74,7 +74,8 @@ class Rotary_Mole(Enemy):
             self.break_turn += 1
         if self.down_turn:
             return
-        if self.break_turn == 1:
+        if self.break_turn == 2:
+            print(f"{self.format_name()} 尝试逃跑！")
             if self.escape(battle):
                 battle.lost = True
                 return

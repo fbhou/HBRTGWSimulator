@@ -2,13 +2,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 import random
 
-from battle import Battle
 from character import Character
-from utils import Battle
-
 if TYPE_CHECKING:
     from battle import Battle
-
 class Megumi(Character):
 
     def __init__(self, id: str = "Megumi", name: str = "逢川惠", troop: str = "31A", internal_id: str = "31A05"):

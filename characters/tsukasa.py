@@ -2,11 +2,11 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 import random
 
-from battle import Battle
 from character import Character
 from field import Field_fire
 
 if TYPE_CHECKING:
+    from battle import Battle
     from field import *
 
 class Tsukasa(Character):

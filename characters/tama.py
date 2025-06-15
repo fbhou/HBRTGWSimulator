@@ -2,7 +2,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 import random
 
-from battle import Battle
 from character import Character
 
 if TYPE_CHECKING:
