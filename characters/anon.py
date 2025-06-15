@@ -112,7 +112,38 @@ class Anon(Character):
     def on_rotary_mole_escape(self, battle: Battle, power: int) -> bool:
         boss = list(battle.enemy_dict.values())[0]
         result = battle.d(100, f"{self.format_name()} 的阻挡掷骰")
-        if result + 50 >= power:
+        counter_power = result + 50
+
+        if result >= 98:
+            print(f"{self.format_name()} 触发了大成功！")
+            result_choice = 0
+            level = 1
+            while True:
+                if level < 1:
+                    break
+                result_choice = battle.d(10, f"{self.format_name()} 的大成功掷骰")
+                if result_choice == 10:
+                    result_choice = battle.d(2, f"")
+                    if result_choice == 1:
+                        print(f"{self.format_name()} 触发了未结算的多重大成功！")
+                        level += 1
+                        continue
+                    else:
+                        level -= 1
+                        continue
+                elif result_choice <= 3:
+                    boss.receive_damage(counter_power)
+                    break
+                elif result_choice <= 6:
+                    boss.receive_damage(2 * counter_power)
+                    break
+                else:
+                    boss.receive_damage(2 * counter_power)
+                    print(f"危险：{self.format_name()} 回想起了一些过去的记忆")
+                    break
+
+        print(f"{self.format_name()} 的阻挡：{counter_power}")
+        if counter_power >= power:
             print(f"{self.format_name()} 成功阻挡了 {boss.format_name()} 的逃跑！")
             print()
             return True

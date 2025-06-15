@@ -60,15 +60,16 @@ class Enemy(object):
 
 class Rotary_Mole(Enemy):
 
-    def __init__(self):
-        max_dp = 0
-        for i in range(40):
-            max_dp += random.randint(1, 100)
-        if max_dp < 1500:
-            max_dp = 1500
-        max_hp = max_dp + 1000
-        super().__init__("Rotary_Mole", "畸旋钻", max_dp, max_hp)
-    
+    def __init__(self, id: str = "Rotary_Mole", name: str = "畸旋钻", max_dp: int = 0, max_hp: int = 0):
+        if max_dp <= 0:
+            max_dp = 0
+            for i in range(40):
+                max_dp += random.randint(1, 100)
+            if max_dp < 1500:
+                max_dp = 1500
+            max_hp = max_dp + 1000
+        super().__init__(id, name, max_dp, max_hp)
+
     def move(self, battle: Battle):
         if self.is_break:
             self.break_turn += 1
@@ -115,6 +116,40 @@ class Rotary_Mole(Enemy):
         power = battle.dd(2, 100)
         print(f"{self.format_name()} 的攻击出力：{power}")
         battle.enemy_multi_list.append((Enemy_Multi(power, is_inevitable=False)))
+
+class Ultimate_Rotary_Mole(Rotary_Mole):
+
+    def __init__(self):
+        max_dp = 0
+        for i in range(80):
+            max_dp += random.randint(1, 100)
+        if max_dp < 1500:
+            max_dp = 1500
+        max_hp = max_dp + 2000
+        super().__init__("Ultimate_Rotary_Mole", "超级畸旋钻", max_dp, max_hp)
+    
+    def attack_single(self, battle: Battle):
+        if self.target_queue:
+            self.target = self.target_queue[0]
+        if self.target == "":
+            self.target = random.sample(list(battle.character_dict.items()), 1)[0][0]
+        print(f"{self.format_name()} 发动单体攻击，目标：{battle.character_dict[self.target].format_name()}！")
+        power = 30 + battle.d(120)
+        print(f"{self.format_name()} 的攻击出力：{power}")
+        battle.enemy_single_list.append((Enemy_Single(self.target, power, is_inevitable=self.is_inevitable)))
+    
+    def numb_needle(self, battle: Battle):
+        print(f"{self.format_name()} 发动群体攻击！")
+        power = battle.d(150)
+        print(f"{self.format_name()} 的攻击出力：{power}")
+        battle.enemy_multi_list.append((Enemy_Multi(power, is_inevitable=False)))
+
+    def demise_wave(self, battle: Battle):
+        print(f"{self.format_name()} 发动转阶段特殊群体攻击！")
+        power = battle.dd(3, 100)
+        print(f"{self.format_name()} 的攻击出力：{power}")
+        battle.enemy_multi_list.append((Enemy_Multi(power, is_inevitable=False)))
+
 
 class Hopper(Enemy):
 
