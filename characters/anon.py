@@ -139,7 +139,7 @@ class Anon(Character):
                     break
                 else:
                     boss.receive_damage(2 * counter_power)
-                    print(f"危险：{self.format_name()} 回想起了一些过去的记忆")
+                    print(f"**危险：{self.format_name()} 回想起了一些过去的记忆**")
                     break
 
         print(f"{self.format_name()} 的阻挡：{counter_power}")

@@ -3,7 +3,7 @@ import random
 from typing import TYPE_CHECKING
 
 from field import Field
-from utils import dp_level_name
+from utils import dp_level_name, extra_turn_reason_type_name
 
 if TYPE_CHECKING:
     from character import Character
@@ -30,6 +30,7 @@ class Battle(object):
         self.enemy_multi_list = []
         self.overdrive = 0
         self.in_overdrive = False
+        self.extra_turn_list = []
         
         self.round = 0
         self.winned = False
@@ -37,40 +38,29 @@ class Battle(object):
 
     def run_round(self):
         self.round += 1
-        self.dice_dict = {}
-        self.damage_original_dict = {}
-        self.success_list = []
-        self.failure_list = []
-        self.damage_150_list = []
-        self.damage_200_list = []
-        self.damage_blast_dict = {}
-        self.damage_buff_dict = {}
-        self.damage_extra_dict = {}
-        self.skill_list = []
+        self._initialize_ally_round()
         self.enemy_single_list = []
         self.enemy_multi_list = []
 
         self.ally_round()
         if self.lost or self.winned:
             return
-        if self.overdrive * len(self.enemy_dict) >= 10:
-            self.in_overdrive = True
-            self.overdrive = 0
-            self.dice_dict = {}
-            self.damage_original_dict = {}
-            self.success_list = []
-            self.failure_list = []
-            self.damage_150_list = []
-            self.damage_200_list = []
-            self.damage_blast_dict = {}
-            self.damage_extra_dict = {}
-            self.skill_list = []
-            print("--- 额外回合 ---")
-            self.ally_round()
-            self.in_overdrive = False
-        if self.lost or self.winned:
-            return
         
+        while self.extra_turn_list:
+            extra_turn = self.extra_turn_list.pop(0)
+            character_ids = extra_turn["character_ids"]
+            reason = extra_turn["reason"]
+            print(f"额外回合：{', '.join(character_ids)}，由 {extra_turn_reason_type_name(reason)} 触发")
+            if reason == 1:
+                self.overdrive = 0
+                self.in_overdrive = True
+            self._initialize_ally_round()
+            self._run_ally_round(character_ids)
+            if self.lost or self.winned:
+                return
+
+        self.in_overdrive = False
+
         self.enemy_round()
         if self.lost or self.winned:
             return
@@ -107,14 +97,26 @@ class Battle(object):
             print(f"{enemy.format_name()} - DP: {enemy.dp}, HP: {enemy.hp}, Is Break: {enemy.is_break}, Down Turn: {enemy.down_turn}, Blast Count: {enemy.blast_count()}, Target Queue: {enemy.target_queue}, Break Turn: {enemy.break_turn}")
         print("")
 
-        boss = list(self.enemy_dict.items())[0][1]
-
         for character in self.character_dict.values():
             character.on_ally_round_start(self)
 
+        self._run_ally_round(list(self.character_dict.keys()))
+    
+    def grant_extra_turn(self, character_ids: list[str], reason: int = 0):
+        if not character_ids:
+            return
+        self.extra_turn_list.append({"character_ids": character_ids, "reason": reason})
+
+    def _run_ally_round(self, character_ids: list[str]):
+        if not character_ids:
+            return
+        filtered_character_dict = {id: self.character_dict[id] for id in character_ids if id in self.character_dict}
+
+        boss = list(self.enemy_dict.items())[0][1]
+
         # Attack dice rolls
         print("攻击掷骰：")
-        for character in self.character_dict.values():
+        for character in filtered_character_dict.values():
             if character.down_turn > 0:
                 print(f"{character.format_name()}：无法行动")
             elif character.unable_attack_turn > 0:
@@ -123,7 +125,7 @@ class Battle(object):
                 character.dice(self)
         
         # Process dice results
-        for character in self.character_dict.values():
+        for character in filtered_character_dict.values():
             character.on_dice_finish(self)
 
         # Process successes and failures
@@ -133,9 +135,9 @@ class Battle(object):
             self.character_dict[id].failure(self)
 
         # Main moves
-        for character in self.character_dict.values():
+        for character in filtered_character_dict.values():
             character.move(self)
-
+        
         # Process skills
         for skill in self.skill_list:
             skill(self)
@@ -143,11 +145,11 @@ class Battle(object):
         # Process field effects
         if self.field:
             self.field.effect(self)
-        
+
         # Process blast rate
         if boss.is_break:
             self.damage_blast_dict = {character_id: 20 * boss.blast_count_dict.get(character_id, 0) for character_id in boss.blast_count_dict.keys()}
-
+        
         # Damage statistics
         for id, damage in self.damage_original_dict.items():
             if id == "None":
@@ -177,7 +179,7 @@ class Battle(object):
         print(f"总伤害：{total_damage}")
         print("")
 
-        list(self.enemy_dict.items())[0][1].receive_damage(total_damage)
+        boss.receive_damage(total_damage)
 
         # Update character states at the end of the round
         temp_enemy_dict = self.enemy_dict.copy()
@@ -186,6 +188,9 @@ class Battle(object):
                 self.enemy_dict.pop(enemy_id)
         if not self.enemy_dict:
             self.winned = True
+        
+        if self.overdrive * len(self.enemy_dict) >= 10:
+            self.grant_extra_turn(list(self.character_dict.keys()), reason=1)
 
     def enemy_round(self):
         for character in self.character_dict.values():
@@ -241,3 +246,15 @@ class Battle(object):
         else:
             print(f"{message}：{num}d{bound} = {res}")
         return res
+
+    def _initialize_ally_round(self):
+        self.dice_dict = {}
+        self.damage_original_dict = {}
+        self.success_list = []
+        self.failure_list = []
+        self.damage_150_list = []
+        self.damage_200_list = []
+        self.damage_blast_dict = {}
+        self.damage_buff_dict = {}
+        self.damage_extra_dict = {}
+        self.skill_list = []
