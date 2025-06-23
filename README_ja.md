@@ -1,4 +1,4 @@
-# 祥子inヘブバン戦闘シミュレーター
+# 「祥子inヘブバン」戦闘シミュレーター
 
 [简体中文](./README.md) | [English](./README_en.md) | [日本語](./README_ja.md)
 
